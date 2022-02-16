@@ -1,0 +1,1 @@
+export const SUPER_USER = "p_kopyl.testnet";

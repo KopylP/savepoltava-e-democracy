@@ -5,6 +5,7 @@ import { Guard } from "../helpers/guard";
 import guid from "../helpers/guid";
 import { throwIf } from '../helpers/error';
 
+@nearBindgen
 export class Pool {
     guid: string;
     votingStartDate: Date;

@@ -1,6 +1,7 @@
 import { PersistentSet } from 'near-sdk-as';
 import { Guard } from './../helpers/guard';
 
+@nearBindgen
 export class Vote {
     accountId: string;
     poolGuid: string;

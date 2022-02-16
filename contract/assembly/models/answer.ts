@@ -1,5 +1,6 @@
 import { Guard } from "../helpers/guard";
 
+@nearBindgen
 export class Answer {
     content: string;
 
