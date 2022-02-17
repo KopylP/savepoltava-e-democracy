@@ -9,12 +9,12 @@ export function addEditor(editorAccountId: string): void {
 }
 
 export function addVoter(voterAccountId: string): void {
-  throwIf(!User.isSuperUser, "You are haven`t permissions");
+  throwIf(!User.isSuperUser, "You do not have permissions");
   permissions.addVoter(voterAccountId);
 }
 
 export function addVote(poolGuid: string, selectedAnswerPositions: u16[]) {
-  throwIf(!User.isVoter, "You are haven`t permissions");
+  throwIf(!User.isVoter, "You do not have permissions");
   
   var poolsArray = pools.values();
   const poolIndex = poolsArray.findIndex(p => p.guid == poolGuid);
