@@ -4,7 +4,7 @@ import { pools } from './models/pool';
 import * as permissions from './models/permissions';
 
 export function addEditor(editorAccountId: string): void {
-  throwIf(!User.isSuperUser, "You are haven`t permissions");
+  throwIf(!User.isSuperUser, "You do not have permissions");
   permissions.addEditor(editorAccountId);
 }
 
