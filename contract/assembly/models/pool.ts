@@ -4,6 +4,8 @@ import { PersistentSet, PersistentMap } from "near-sdk-as";
 import { Guard } from "../helpers/guard";
 import guid from "../helpers/guid";
 import { throwIf } from '../helpers/error';
+import { PersistentList } from '../framework/structures/persistent-list';
+import { stringifyJsonOrBytes } from 'near-api-js/lib/transaction';
 
 @nearBindgen
 export class Pool {
@@ -15,18 +17,22 @@ export class Pool {
     modifiedDate: Date;
     isMultiple: bool;
     revoteCount: u8;
-    answers: Map<u16, Answer> = new Map<u16, Answer>();
+    answers: Answer[];
+    creator: string;
     
     constructor(votingStartDate: Date,
         votingEndDate: Date,
         question: string,
+        creator: string,
         isMultiple: bool = false,
-        revoteCount: u16 = 0) {
+        revoteCount: u16 = 0,
+        answers = []) {
         const now = new Date(Date.now());
 
         Guard.greaterThen(votingStartDate, now);
         Guard.greaterThen(votingEndDate, votingStartDate);
         Guard.notEmpty(question, nameof(question));
+        Guard.notEmpty(creator, nameof(creator));
         this.createdDate = now;
         this.modifiedDate = now;
         this.name = question;
@@ -35,15 +41,23 @@ export class Pool {
         this.guid = guid.generate();
         this.isMultiple = isMultiple;
         this.revoteCount = revoteCount;
-    }
-
-    addAnswer(position: u16, content: string): void {
-        this.answers.set(position, new Answer(content));
+        this.answers = answers;
+        this.creator = creator;
     }
 
     isActive(): bool {
         const now = new Date(Date.now());
         return this.votingStartDate <= now && this.votingEndDate >= now;
+    }
+
+    isFinished(): bool {
+        const now = new Date(Date.now());
+        return this.votingEndDate < now;
+    }
+
+    isNotStarted(): bool {
+        const now = new Date(Date.now());
+        return this.votingStartDate > now;
     }
 
     addVote(accountId: string, selectedAnswerPositions: u16[]) {
@@ -60,9 +74,64 @@ export class Pool {
         votes.add(vote);
     }
 
+    public toDto()  {
+        const now = new Date(Date.now());
+        const voteEnds = this.votingEndDate < now;
+        return {
+            name: this.name,
+            isActive: this.isActive(),
+            votingStartDate: this.votingStartDate,
+            votingEndDate: this.votingEndDate,
+            isMultiple: this.isMultiple,
+            answers: voteEnds ? this._getAnswersWithVoters()
+                : this.answers.map(p => {
+                    return {
+                        content: p.content,
+                        voters: []
+                    }
+                })
+        }
+    }
+
+    private _getAnswersWithVoters() {
+        const poolVotes = votes.values()
+            .filter(x => x.poolGuid === this.guid)
+            .sort(p => p.date.getTime());
+        
+        const currentAccountVotes = poolVotes.reduce((group, vote) => {
+            group.set(vote.accountId, vote);
+            return group;
+        }, new Map<string, Vote>()).values();
+
+        const voteAnswerPositions = currentAccountVotes.map(p => {
+            const result = [];
+            for (let i = 0; i <= p.selectedAnswerPositions.length; i++) {
+                result.push({
+                    accountId: p.accountId,
+                    answerPosition: p.selectedAnswerPositions[i]
+                });
+            }
+            return result;
+        }).flat();
+
+        const votersGroupByPosition = voteAnswerPositions.reduce((group, voteAnswerPosition) => {
+            let currentVoters = group.get(voteAnswerPosition.answerPosition) || [];
+            currentVoters = [...currentVoters, voteAnswerPosition.accountId];
+            group.set(voteAnswerPosition.answerPosition, currentVoters);
+            return group;
+        }, new Map<number, string[]>());
+
+        return this.answers.map((p, i) => {
+            return {
+                content: p.content,
+                voters: votersGroupByPosition.get(i) || []
+            }
+        });
+    }
+
     private _checkIfSelectedNumbersIsCorrect(selectedAnswerPositions: u16[]): bool {
         for (let i : u16 = 0; i < selectedAnswerPositions.length; i++) {
-            if (!this.answers.has(i))
+            if (selectedAnswerPositions[i] < 0 || selectedAnswerPositions[i] >= this.answers.length)
                 return false;
         }
 
@@ -70,4 +139,4 @@ export class Pool {
     }
 }
 
-export const pools = new PersistentSet<Pool>("pools");
+export const pools = new PersistentList<Pool>("pools");
