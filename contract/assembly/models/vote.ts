@@ -5,10 +5,10 @@ import { Guard } from './../helpers/guard';
 export class Vote {
     accountId: string;
     poolGuid: string;
-    selectedAnswerPositions: u16[];
+    selectedAnswerPositions: i32[];
     date: Date;
 
-    constructor (accountId: string, poolGuid: string, selectedAnswerPositions: u16[]) {
+    constructor (accountId: string, poolGuid: string, selectedAnswerPositions: i32[]) {
         Guard.notEmpty(accountId, nameof(accountId));
         Guard.notEmpty(poolGuid, nameof(poolGuid));
         Guard.arrayNullOrEmpty(selectedAnswerPositions);

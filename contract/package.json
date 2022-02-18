@@ -8,10 +8,13 @@
     "build:debug": "asb --target debug",
     "test": "asp --nologo"
   },
-  "dependencies": {
-    "near-sdk-as": "3.1.0"
-  },
   "devDependencies": {
+    "assemblyscript": "^0.19.23",
+    "near-sdk-as": "^3.1.0",
     "shelljs": "^0.8.4"
+  },
+  "dependencies": {
+    "@assemblyscript/loader": "^0.19.23",
+    "source-map-support": "^0.5.21"
   }
 }

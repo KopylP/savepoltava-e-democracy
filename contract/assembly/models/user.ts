@@ -3,15 +3,14 @@ import { SUPER_USER } from "../constants";
 import { editors, voters } from "./permissions";
 
 export class User {
-    static accountId = context.sender;
-    static balance = context.accountBalance;
-    static isSignIn = User._isSignIn();
-    static isVoter = User._isVoter();
-    static isEditor = User._isEditor();
-    static isSuperUser = User._isSuperUser();
+    static accountId: string = context.sender;
+    static isSignIn: bool = User._isSignIn();
+    static isVoter: bool = User._isVoter();
+    static isEditor: bool = User._isEditor();
+    static isSuperUser: bool = User._isSuperUser();
 
     private static _isSignIn() : bool {
-        return (context.sender || '') !== '';
+        return context.sender != null && typeof context.sender != 'undefined' && context.sender != '';
     }
 
     private static _isVoter() : bool {

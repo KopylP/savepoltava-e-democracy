@@ -1,6 +1,6 @@
 export class Guard {
     static greaterThen (date1: Date, date2: Date): void {
-        if (date1 < date2)
+        if (date1.getTime() < date2.getTime())
             throw new Error(`Date ${nameof(date1)} should be greater then ${nameof(date2)}`);
     }
 
@@ -14,13 +14,13 @@ export class Guard {
             throw new Error("Strings aren`t equal to each other");
     }
 
-    static notNull(obj: any, name: string) {
+    static notNull<T>(obj: T, name: string): void {
         if (obj == null) {
             throw new Error(`Object ${name} is null`);
         }
     }
 
-    static arrayNullOrEmpty(arr: any[]) {
+    static arrayNullOrEmpty<T>(arr: T[]): void {
         if (arr == null || arr.length == 0) {
             throw new Error("Array is null or empty");
         }

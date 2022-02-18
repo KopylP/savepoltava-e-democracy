@@ -16,7 +16,7 @@ export class PersistentList<T> {
     this._vector.push(item);
   }
 
-  replace(index: i32, item: T) {
+  replace(index: i32, item: T): void {
       this._vector.replace(index, item);
   }
 
@@ -26,7 +26,7 @@ export class PersistentList<T> {
     }
   }
 
-  delete(predicate: (element: T, index: number, array?: T[] | undefined) => bool): void {
+  delete(predicate: (element: T, index: i32, array: T[]) => bool): void {
     const index = this.values().findIndex(predicate);
     if (index !== -1) {
         this._vector.swap_remove(index);
