@@ -1,4 +1,4 @@
-const CONTRACT_NAME = process.env.CONTRACT_NAME ||'savepoltava-e-democracy'
+const CONTRACT_NAME = process.env.CONTRACT_NAME ||'p_kopyl.testnet'
 
 function getConfig(env) {
   switch (env) {

@@ -1,22 +1,26 @@
+import { context } from 'near-sdk-as';
 import { User } from './models/user';
 import { throwIf } from './helpers/error';
 import { pools, Pool, PoolDto } from './models/pool';
 import * as permissions from './models/permissions';
 
 export function addEditor(editorAccountId: string): void {
-  throwIf(!User.isSuperUser, "You do not have permissions");
+  const user = new User(context.sender);
+  throwIf(!user.isSuperUser, "You do not have permissions");
   permissions.addEditor(editorAccountId);
 }
 
 export function addVoter(voterAccountId: string): void {
-  throwIf(!User.isSuperUser, "You do not have permissions");
+  const user = new User(context.sender);
+  throwIf(!user.isSuperUser, "You do not have permissions");
   permissions.addVoter(voterAccountId);
 }
 
 let vote_poolGuid: string;
 
 export function vote(poolGuid: string, selectedAnswerPositions: i32[]) : void {
-  throwIf(!User.isVoter, "You do not have permissions");
+  const user = new User(context.sender);
+  throwIf(!user.isVoter, "You do not have permissions");
   
   const poolsArray = pools.values();
   vote_poolGuid = poolGuid;
@@ -26,24 +30,11 @@ export function vote(poolGuid: string, selectedAnswerPositions: i32[]) : void {
   const pool = poolsArray[poolIndex];
   throwIf(!pool.isActive(), "Pool is not active!");
 
-  pool.addVote(User.accountId, selectedAnswerPositions);
+  pool.addVote(user.accountId, selectedAnswerPositions);
 }
 
-@nearBindgen
-class UserDto {
-  accountId: string;
-  isSuperUser: bool;
-  isVoter: bool;
-  isEditor: bool;
-}
-
-export function getUserData(): UserDto {
-  return {
-    accountId: User.accountId,
-    isSuperUser: User.isSuperUser,
-    isVoter: User.isVoter,
-    isEditor: User.isEditor
-  }
+export function getUserData(accountId: string): User {
+  return new User(accountId);
 }
 
 export function getActivePools(): PoolDto[] {
@@ -61,13 +52,14 @@ export function getNotStartedPools(): PoolDto[] {
 let deletePool_poolGuid: string;
 
 export function deletePool(poolGuid: string) : void {
+  const user = new User(context.sender);
   deletePool_poolGuid = poolGuid;
   const poolIndex = pools.values().findIndex(p => p.guid == deletePool_poolGuid);
   throwIf(poolIndex == -1, "Pool not found!");
 
   const pool = pools.values()[poolIndex];
   throwIf(!pool.isNotStarted(), "Pool has been already started");
-  throwIf(pool.creator !== User.accountId && !User.isSuperUser, "You do not have permissions");
+  throwIf(pool.creator !== user.accountId && !user.isSuperUser, "You do not have permissions");
 
   pools.delete(p => p.guid == deletePool_poolGuid);
 }
@@ -79,10 +71,11 @@ export function addPool(
   isMultiple: bool = false,
   revoteCount: u8 = 0,
   answers: string[] = []) : void {
+    const user = new User(context.sender);
     const pool = new Pool(votingStartDate,
       votingEndDate,
       question,
-      User.accountId,
+      user.accountId,
       isMultiple,
       revoteCount,
       answers);
