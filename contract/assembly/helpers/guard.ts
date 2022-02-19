@@ -1,6 +1,6 @@
 export class Guard {
-    static greaterThen (date1: Date, date2: Date): void {
-        if (date1.getTime() < date2.getTime())
+    static greaterThen (date1: number, date2: number): void {
+        if (date1 < date2)
             throw new Error(`Date ${nameof(date1)} should be greater then ${nameof(date2)}`);
     }
 

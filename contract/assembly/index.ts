@@ -29,6 +29,7 @@ export function vote(poolGuid: string, selectedAnswerPositions: i32[]) : void {
   pool.addVote(User.accountId, selectedAnswerPositions);
 }
 
+@nearBindgen
 class UserDto {
   accountId: string;
   isSuperUser: bool;
@@ -72,8 +73,8 @@ export function deletePool(poolGuid: string) : void {
 }
 
 export function addPool(
-  votingStartDate: Date,
-  votingEndDate: Date,
+  votingStartDate: number,
+  votingEndDate: number,
   question: string,
   isMultiple: bool = false,
   revoteCount: u8 = 0,

@@ -4,11 +4,14 @@ import { Guard } from "../helpers/guard";
 import guid from "../helpers/guid";
 import { throwIf } from '../helpers/error';
 import { PersistentList } from '../framework/structures/persistent-list';
+import { datetime } from "near-sdk-as";
 
 let addVote_AccountId: string;
 let addVote_Guid: string;
 let getAnswersWithVoters_guid: string;
 let getAnswersWithVoters_votersGroupByPosition: Map<i32, string[]>;
+
+@nearBindgen
 class AnswerWithVoter {
     content: string;
     voters: string[];
@@ -19,42 +22,42 @@ class VoteAnswerPosition {
     answerPosition: i32;
 }
 
+@nearBindgen
 export class PoolDto {
     name: string;
     isActive: bool;
-    votingStartDate: Date;
-    votingEndDate: Date;
+    votingStartDate: number;
+    votingEndDate: number;
     isMultiple: bool;
     answers: AnswerWithVoter[];
 }
 @nearBindgen
 export class Pool {
     guid: string;
-    votingStartDate: Date;
-    votingEndDate: Date;
+    votingStartDate: number = datetime.block_datetime().second;
+    votingEndDate: number = datetime.block_datetime().second;
     name: string;
-    createdDate: Date;
-    modifiedDate: Date;
     isMultiple: bool;
     revoteCount: u8;
     answers: Answer[];
     creator: string;
+    createdDate: number;
+
     
-    constructor(votingStartDate: Date,
-        votingEndDate: Date,
+    constructor(votingStartDate: number,
+        votingEndDate: number,
         question: string,
         creator: string,
         isMultiple: bool = false,
         revoteCount: u8 = 0,
         answers: string[] = []) {
-        const now = new Date(Date.now());
+        const now = datetime.block_datetime().second;
 
         Guard.greaterThen(votingStartDate, now);
         Guard.greaterThen(votingEndDate, votingStartDate);
         Guard.notEmpty(question, nameof(question));
         Guard.notEmpty(creator, nameof(creator));
         this.createdDate = now;
-        this.modifiedDate = now;
         this.name = question;
         this.votingStartDate = votingStartDate;
         this.votingEndDate = votingEndDate;
@@ -67,18 +70,18 @@ export class Pool {
     }
 
     isActive(): bool {
-        const now = Date.now();
-        return this.votingStartDate.getTime() <= now && this.votingEndDate.getTime() >= now;
+        const now = datetime.block_datetime().second;
+        return this.votingStartDate <= now && this.votingEndDate >= now;
     }
 
     isFinished(): bool {
-        const now = Date.now();
-        return this.votingEndDate.getTime() < now;
+        const now = datetime.block_datetime().second;
+        return this.votingEndDate < now;
     }
 
     isNotStarted(): bool {
-        const now = Date.now();
-        return this.votingStartDate.getTime() > now;
+        const now = datetime.block_datetime().second;
+        return this.votingStartDate > now;
     }
 
     addVote(accountId: string, selectedAnswerPositions: i32[]): void {

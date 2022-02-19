@@ -1,12 +1,13 @@
 import { PersistentSet } from 'near-sdk-as';
 import { Guard } from './../helpers/guard';
+import { datetime } from "near-sdk-as";
 
 @nearBindgen
 export class Vote {
     accountId: string;
     poolGuid: string;
     selectedAnswerPositions: i32[];
-    date: Date;
+    date: number = datetime.block_datetime().second;
 
     constructor (accountId: string, poolGuid: string, selectedAnswerPositions: i32[]) {
         Guard.notEmpty(accountId, nameof(accountId));
@@ -16,7 +17,6 @@ export class Vote {
         this.accountId = accountId;
         this.poolGuid = poolGuid;
         this.selectedAnswerPositions = selectedAnswerPositions;
-        this.date = new Date(Date.now());
     }
 }
 
