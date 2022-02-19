@@ -10,6 +10,7 @@ const NearContext = React.createContext({});
 export const NearContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [contract, setContract] = useState();
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(async () => {
     const near = await connect(
@@ -51,10 +52,11 @@ export const NearContextProvider = ({ children }) => {
     }
 
     setContract(contractService);
+    setInitialized(true);
   }, []);
 
   return (
-    <NearContext.Provider value={{ user, contract }}>
+    <NearContext.Provider value={{ user, contract, initialized }}>
       {children}
     </NearContext.Provider>
   );

@@ -1,18 +1,19 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import './global.css'
 import { NearContextProvider, useNear } from './Context/near-context'
+import Navbar from './components/shared/organisms/navbar'
+import LayoutPage from './pages/shared/layout-page'
 
 export default function App() {
   return <NearContextProvider>
-    <h1>Hello world</h1>
-    <TestComponent />
+    <BootstrapComponent />
   </NearContextProvider>
 }
 
-const TestComponent = () => {
-  const { contract, user } = useNear();
-  useEffect(() => {
-    console.log(user);
-  }, [user]);
-  return <button onClick={async () => await contract.login()} value="Sign In"/>
+const BootstrapComponent = () => {
+  const { initialized } = useNear();
+  if (!initialized)
+    return <div>Loading...</div>;
+  
+  return <LayoutPage />
 }
